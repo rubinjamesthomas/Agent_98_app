@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AGENT 98</title>
+<style>
+:root{--navy:#071426;--navy2:#0d2039;--gold:#e9ad2d;--gold2:#ffd56a;--purple:#6f18a8;--ink:#0b1220;--muted:#9eacc3;--line:#2e4a6d;--danger:#ff7b83;--ok:#67e39a}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(160deg,#030b16,#0a1930 55%,#071426);color:#f5f7fb;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input,select{font:inherit} button{cursor:pointer;touch-action:manipulation;pointer-events:auto}
+.app{max-width:980px;margin:auto;padding:14px 14px 40px}.banner{width:100%;max-height:145px;object-fit:contain;object-position:center;margin:0 auto 10px;display:block}
+.panel{background:rgba(10,27,48,.94);border:1px solid #29476d;border-radius:18px;box-shadow:0 14px 35px #0007;padding:18px;margin:12px 0}
+h1,h2,h3{margin:0 0 12px;letter-spacing:1.5px}.eyebrow{font-size:12px;color:var(--gold2);font-weight:800;letter-spacing:2px}.muted{color:var(--muted)}
+.setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;font-weight:800;color:#b9c5d8;letter-spacing:1px}
+input,select{touch-action:manipulation;background:#071426;color:white;border:1px solid #3d5d84;border-radius:11px;padding:12px 13px;outline:none}input:focus,select:focus{border-color:var(--gold)}
+.btn{border:1px solid #3e608c;background:#122e50;color:#fff;padding:12px 16px;border-radius:12px;font-weight:900;letter-spacing:.7px}.btn.gold{background:linear-gradient(135deg,#ffd86b,#c9870d);color:#111;border:0}.btn.purple{background:linear-gradient(135deg,#8c2bd0,#50107f);border:0}.btn:disabled{opacity:.45;cursor:not-allowed}
+.mode-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mode{padding:14px;border-radius:13px;border:1px solid #38587e;background:#0c223d;text-align:left;color:white}.mode.active{border-color:var(--gold);box-shadow:0 0 0 2px #e9ad2d33}.mode strong{display:block}.mode small{color:var(--muted)}
+.switch{display:flex;align-items:center;justify-content:space-between;background:#08182c;border:1px solid #29476d;padding:11px 13px;border-radius:12px}
+.game-top{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}.playerbox{padding:11px;border:1px solid #29476d;border-radius:14px;background:#091a2e}.playerbox.current{border-color:var(--gold);box-shadow:0 0 18px #e9ad2d22}.playerbox .name{font-weight:900}.target{text-align:center}.target .num{font-size:34px;font-weight:1000;color:var(--gold2)}
+.table{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.pile-area{display:flex;gap:14px;justify-content:center;align-items:center}.pile{text-align:center}.pile-card,.card{width:74px;height:105px;border-radius:12px;border:2px solid var(--gold);background:#f4f6fa;color:#0a1730;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:1000;box-shadow:0 8px 18px #0005}.pile-card.back{overflow:hidden;background:#081426}.pile-card.back img{width:100%;height:100%;object-fit:cover}.pile .count{font-size:12px;font-weight:900;color:#aebbd0;margin-top:7px}.actionrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.hand-title{font-size:13px;color:#aebbd0;font-weight:900;letter-spacing:1px;margin-bottom:8px}.hand{display:flex;gap:8px;flex-wrap:wrap}.card{width:67px;height:92px;font-size:36px;user-select:none}.card.discardable{cursor:pointer;box-shadow:0 0 0 3px #e9ad2d66,0 8px 18px #0005;transform:translateY(-2px)}.card.discardable:active{transform:scale(.96)}.card.joker{padding:0;overflow:hidden}.card.joker img{width:100%;height:100%;object-fit:cover}
+.equation{margin-top:14px}.inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}.inputs label{font-size:12px;color:#aebbd0;font-weight:900;letter-spacing:1px}.inputs input{width:100%;min-width:0;font-size:clamp(22px,6vw,25px);font-weight:900;text-align:center}
+.vertical{width:min(360px,100%);margin:14px auto;padding:16px;border:1px solid #29476d;border-radius:15px;background:#061222}.sumline{font-size:32px;font-weight:1000;text-align:right;letter-spacing:4px}.plusline{border-bottom:3px solid #d7dfeb;padding-bottom:7px}.result{font-size:30px;text-align:right;margin-top:8px;color:#aebbd0}
+.message{padding:12px;border-radius:12px;margin-top:10px;font-weight:800}.message.error{border:1px solid #b54f58;color:#ffb0b5;background:#3a1820}.message.ok{border:1px solid #3c9b68;color:#a5f0bf;background:#0d3022}
+.log{max-height:150px;overflow:auto;font-size:13px;color:#b8c5d8}.log div{padding:6px 0;border-bottom:1px solid #1b3450}
+.overlay{position:fixed;inset:0;background:#020711ee;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}.overlay .panel{max-width:500px;width:100%;text-align:center}.winner{font-size:30px;color:var(--gold2);font-weight:1000}
+.hidden{display:none!important}
+@media(max-width:650px){.setup-grid,.table{grid-template-columns:1fr}.game-top{grid-template-columns:1fr 1fr}.target{grid-column:1/-1;grid-row:1}.playerbox{font-size:13px}.pile-card{width:68px;height:96px}.card{width:61px;height:84px}.banner{max-height:110px}}
+
+.closest-score{margin:14px auto;padding:14px 16px;width:min(620px,100%);border:1px solid #a77a1f;border-radius:16px;background:linear-gradient(135deg,#071326,#0d2038);box-shadow:0 8px 24px #0005}
+.closest-title{font-weight:1000;letter-spacing:2px;color:#e9c15b;text-align:center;font-size:15px;margin-bottom:9px}
+.closest-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-weight:900;font-size:13px;text-align:center;color:#dce7f5}
+.closest-lead{text-align:center;margin-top:9px;color:#a9bdd5;font-size:13px;font-weight:800}
+.closest-lead.lead{color:#f4d06b}
+.switch-overlay[hidden]{display:none!important;pointer-events:none}.switch-overlay{position:fixed;inset:0;z-index:9999;background:#020a15;display:flex;align-items:center;justify-content:center;padding:18px}
+.switch-card{width:min(760px,100%);max-height:94vh;overflow:auto;border:2px solid #c9992e;border-radius:22px;background:#061426;box-shadow:0 20px 70px #000c;text-align:center}
+.switch-card img{display:block;width:100%;height:auto;max-height:68vh;object-fit:cover;object-position:center}
+.switch-actions{padding:14px 18px 20px}
+.switch-actions button{width:min(420px,100%);font-size:20px}
+</style>
+</head>
+<!-- AGENT98 v14: touch-safe setup controls -->
+<body>
+<div class="app">
+  <img class="banner" src="agent98-banner.png" alt="AGENT 98" onerror="this.style.display='none'">
+  <div id="setup" class="panel">
+    <div class="eyebrow">CLASSIFIED MATHEMATICS MISSION</div>
+    <h1>AGENT 98</h1>
+    <p class="muted">Construct an addition equation as close as possible to the target. Hit it exactly and you capture Agent 98 immediately. If nobody captures Agent 98 before the card deck runs out, the player closest to the target wins.</p>
+    <div class="setup-grid">
+      <div class="field"><label>TARGET NUMBER</label><input id="target" type="number" min="10" max="999" value="98"></div>
+      <div class="field"><label>OPPONENT CARDS</label><div class="switch"><span>Show opponent's hand</span><input id="showOpp" type="checkbox"></div></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label>GAME MODE</label>
+      <div class="mode-row">
+        <button type="button" class="mode active" data-mode="cpu" onclick="selectMode(this)"><strong>🕵️ Player vs Mr Thomas</strong><small>Mr Thomas plays automatically.</small></button>
+        <button type="button" class="mode" data-mode="human" onclick="selectMode(this)"><strong>👥 Player vs Player</strong><small>Pass the device between turns.</small></button>
+      </div>
+    </div>
+    <div style="margin-top:14px"><button type="button" id="start" class="btn gold" style="width:100%" onclick="startGame()">START MISSION</button></div>
+  </div>
+
+  <div id="game" class="hidden">
+    <div class="game-top panel">
+      <div id="p1Box" class="playerbox"><div class="name">PLAYER 1</div><div class="muted">Your hand</div></div>
+      <div class="target"><div class="eyebrow">TARGET</div><div id="targetDisplay" class="num">98</div></div>
+      <div id="p2Box" class="playerbox"><div class="name" id="p2Name">MR THOMAS</div><div class="muted">Opponent</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="pile-area">
+        <div class="pile"><div id="drawPile" class="pile-card back"><img src="agent98-card-back.png" alt="Draw pile"></div><div id="drawCount" class="count">DRAW (42)</div></div>
+        <div class="pile"><div id="discardTop" class="pile-card">—</div><div class="count">DISCARD</div></div>
+      </div>
+      <div id="actionRow" class="actionrow">
+        <button id="drawBtn" class="btn gold">DRAW HIDDEN CARD</button>
+        <button id="takeBtn" class="btn">TAKE DISCARD</button>
+      </div>
+      <div id="turnHint" class="message" style="text-align:center">Choose a card to draw.</div>
+    </div>
+
+    <div id="oppPanel" class="panel">
+      <div class="hand-title" id="oppTitle">OPPONENT — CLASSIFIED</div>
+      <div id="oppHand" class="hand"></div>
+    </div>
+
+    <div class="panel">
+      <div class="hand-title">YOUR HAND</div>
+      <div id="myHand" class="hand"></div>
+      <div class="equation">
+        <div class="hand-title">BUILD YOUR ADDITION</div>
+        <div class="inputs">
+          <div><label>1ST NUMBER</label><input id="num1" inputmode="numeric" maxlength="3" placeholder="e.g. 65"></div>
+          <div><label>2ND NUMBER</label><input id="num2" inputmode="numeric" maxlength="3" placeholder="e.g. 33"></div>
+        </div>
+        <div id="jokerNomination" class="panel hidden" style="margin:12px 0;padding:12px;border-color:#7d2bb5">
+          <div class="hand-title" style="color:#d98cff">🃏 JOKER NOMINATION</div>
+          <div class="muted" style="margin-bottom:10px">You have a Joker remaining. Nominate the value it will represent for this turn. The value will not be revealed by the game.</div>
+          <div id="jokerFields" class="inputs"></div>
+        </div>
+        <div class="vertical">
+          <div id="v1" class="sumline">—</div>
+          <div id="v2" class="sumline plusline">+ —</div>
+          <div id="vResult" class="result">?</div>
+        </div>
+        <div class="field"><label>YOUR CALCULATED TOTAL</label><input id="calc" inputmode="numeric" placeholder="Calculate it yourself"></div>
+        <div class="actionrow"><button id="clearBtn" class="btn">CLEAR</button><button id="submitBtn" class="btn gold">SUBMIT ONE EQUATION</button></div>
+        <div id="feedback"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="hand-title">MISSION LOG</div>
+      <div id="log" class="log"></div>
+    </div>
+  </div>
+</div>
+
+<div id="handover" class="overlay hidden">
+  <div class="panel">
+    <div class="eyebrow">SECURE HANDOVER</div>
+    <div id="handoverTitle" class="winner">PASS DEVICE</div>
+    <p id="handoverText" class="muted">The next player can take control when the device has been passed over.</p>
+    <button id="unlockBtn" class="btn gold" style="width:100%">UNLOCK PLAYER</button>
+  </div>
+</div>
+
+<div id="overlay" class="overlay hidden">
+  <div class="panel">
+    <div class="eyebrow">MISSION COMPLETE</div>
+    <div id="winner" class="winner"></div>
+    <p id="finalText" class="muted"></p>
+    <button id="newGame" class="btn gold" style="width:100%">NEW MISSION</button>
+  </div>
+</div>
+
+<script>
+const DIGITS=[0,1,2,3,4,5,6,7,8,9];
+let state=null;
+
+const $=id=>document.getElementById(id);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function makeDeck(){return shuffle([...DIGITS,...DIGITS,...DIGITS,...DIGITS,"J","J"]);}
+
+function framework(target){return target<=99?{digits:2,hand:4}: {digits:3,hand:6};}
+function cardLabel(c){return c==="J"?"J":String(c)}
+function bestEquation(hand,target,digits){
+  const n=hand.length;
+  let best=null;
+  const arr=[...Array(n).keys()];
+  function perm(a,out){
+    if(!a.length){
+      const jokers=out.filter(x=>hand[x]==="J").length;
+      const values=[];
+      function assign(k,vals){
+        if(k===jokers){
+          const cards=out.map((idx,i)=>hand[idx]==="J"?vals.shift():hand[idx]);
+          const a=Number(cards.slice(0,digits).join("")), b=Number(cards.slice(digits).join(""));
+          if(cards[0]!==0 && cards[digits]!==0){
+            const diff=Math.abs(a+b-target);
+            if(!best||diff<best.diff)best={a,b,diff,jokerValues:out.map((idx,i)=>hand[idx]==="J"?null:hand[idx])};
+          }
+          return;
+        }
+        for(let v=0;v<=9;v++)assign(k+1,[...vals,v]);
+      }
+      assign(0,[]);
+      return;
+    }
+    for(let i=0;i<a.length;i++)perm(a.slice(0,i).concat(a.slice(i+1)),out.concat(a[i]));
+  }
+  perm(arr,[]);
+  return best;
+}
+function exactForSubmitted(hand,n1,n2,target,digits){
+  if(!/^\d+$/.test(n1)||!/^\d+$/.test(n2))return {ok:false,msg:"Enter both numbers."};
+  if(n1.length!==digits||n2.length!==digits)return {ok:false,msg:`Enter exactly ${digits} digits in each number. Leading zeroes are allowed.`};
+  const chars=(n1+n2).split("").map(Number), pool=[...hand], usedJokers=[];
+  for(const d of chars){
+    const i=pool.indexOf(d);
+    if(i>=0)pool.splice(i,1);
+    else {
+      const j=pool.indexOf("J");
+      if(j>=0){pool.splice(j,1);usedJokers.push(d);}
+      else return {ok:false,msg:"That equation does not use the cards in your hand."};
+    }
+  }
+  if(pool.length!==0)return {ok:false,msg:"You must use every card in your hand exactly once."};
+  const nominated=state.jokerValues||[];
+  if(usedJokers.length!==nominated.length || usedJokers.some((v,i)=>v!==nominated[i])){
+    return {ok:false,msg:"Your equation uses the Joker differently from the value you nominated. You get only one equation attempt, so correct the equation before submitting."};
+  }
+  const total=Number(n1)+Number(n2);
+  return {ok:true,total};
+}
+function activePlayer(){ return state.mode==="human" ? state.turn : 0; }
+function otherPlayer(){ return activePlayer()===0 ? 1 : 0; }
+function playerName(i){ return i===0 ? "PLAYER 1" : (state.mode==="cpu" ? "MR THOMAS" : "PLAYER 2"); }
+function showHandover(nextPlayer){
+  if(state.mode!=="human") return;
+  state.handoffTo=nextPlayer;
+  $("handoverTitle").textContent=`PASS TO ${playerName(nextPlayer)}`;
+  $("handoverText").textContent=`Hide the screen, pass the device to ${playerName(nextPlayer)}, then unlock their turn.`;
+  $("unlockBtn").textContent=`UNLOCK ${playerName(nextPlayer)}`;
+  $("handover").classList.remove("hidden");
+}
+function unlockHandover(){
+  if(!state || state.mode!=="human" || state.handoffTo===null || state.handoffTo===undefined)return;
+  state.turn=state.handoffTo;
+  state.handoffTo=null;
+  $("handover").classList.add("hidden");
+  state.phase="draw";
+  $("turnHint").textContent=`${playerName(state.turn)} — draw a card or take the discard.`;
+  render();
+}
+function render(){
+  const f=framework(state.target), me=activePlayer();
+  $("targetDisplay").textContent=state.target;
+  $("drawCount").textContent=`DRAW (${state.deck.length})`;
+  $("discardTop").textContent=state.discard.length?cardLabel(state.discard[state.discard.length-1]):"—";
+  $("p1Box").classList.toggle("current",state.turn===0);
+  $("p2Box").classList.toggle("current",state.turn===1);
+  $("p2Name").textContent=state.mode==="cpu"?"MR THOMAS":"PLAYER 2";
+  $("oppPanel").querySelector(".hand-title").textContent = me===0
+    ? ($("showOpp").checked ? "MR THOMAS / PLAYER 2 — HAND" : "OPPONENT — CLASSIFIED")
+    : ($("showOpp").checked ? "PLAYER 1 — HAND" : "PLAYER 1 — CLASSIFIED");
+  renderHand();
+  renderOpp();
+  renderGrid();
+  renderJokerNomination();
+  const userTurn = state.mode==="human" || state.turn===0;
+  $("drawBtn").disabled=state.phase!=="draw"||state.deck.length===0||!userTurn;
+  $("takeBtn").disabled=state.phase!=="draw"||!state.discard.length||!userTurn;
+  $("submitBtn").disabled=state.phase!=="submit"||!userTurn;
+  $("num1").disabled=state.phase!=="submit"||!userTurn;
+  $("num2").disabled=state.phase!=="submit"||!userTurn;
+  $("calc").disabled=state.phase!=="submit"||!userTurn;
+  if(state.phase==="discard") $("turnHint").textContent=`${playerName(me)} — CHOOSE A CARD TO THROW BACK`;
+  if(state.phase==="submit") $("turnHint").textContent=`${playerName(me)} — BUILD YOUR EQUATION AND CALCULATE THE TOTAL`;
+  if(state.phase==="draw") $("turnHint").textContent=`${playerName(me)} — DRAW A CARD OR TAKE THE DISCARD`;
+}
+function renderHand(){
+  const el=$("myHand");el.innerHTML="";
+  const me=activePlayer(), canDiscard=state && state.phase==="discard" && (state.mode==="human" || state.turn===0);
+  state.hands[me].forEach((c,i)=>{
+    const d=document.createElement("div");
+    d.className="card"+(c==="J"?" joker":"")+(canDiscard?" discardable":"");
+    d.dataset.cardIndex=i;
+    d.setAttribute("role",canDiscard?"button":"img");
+    d.setAttribute("aria-label",canDiscard?`Discard ${c==="J"?"Joker":c}`:`Card ${c==="J"?"Joker":c}`);
+    if(c==="J") d.innerHTML='<img src="agent98-joker.png" alt="Joker">';
+    else d.textContent=c;
+    el.appendChild(d);
+  });
+}
+function renderOpp(){
+  const el=$("oppHand");el.innerHTML="";
+  const me=activePlayer(), opp=me===0?1:0, show=$("showOpp").checked, hand=state.hands[opp];
+  hand.forEach(c=>{
+    const d=document.createElement("div");
+    d.className="card"+(c==="J"&&show?" joker":"");
+    if(show&&c==="J") d.innerHTML='<img src="agent98-joker.png" alt="Joker">';
+    else if(show) d.textContent=c;
+    else { d.className+=" joker"; d.innerHTML='<img src="agent98-card-back.png" alt="Hidden card">'; }
+    el.appendChild(d);
+  });
+  $("oppTitle").textContent=show?`${playerName(opp)} — HAND`:`${playerName(opp)} — CLASSIFIED`;
+}
+function renderJokerNomination(){
+  const box=$("jokerNomination"), fields=$("jokerFields");
+  if(!box||!fields)return;
+  const me=activePlayer(), jokers=state.hands[me].filter(c=>c==="J").length;
+  if((state.phase!=="nominate" && state.phase!=="submit") || jokers===0){
+    box.classList.add("hidden"); fields.innerHTML=""; return;
+  }
+  box.classList.remove("hidden"); fields.innerHTML="";
+  for(let i=0;i<jokers;i++){
+    const wrap=document.createElement("div"); wrap.className="field";
+    const lab=document.createElement("label"); lab.textContent=`JOKER ${i+1} VALUE`;
+    const sel=document.createElement("select"); sel.dataset.jokerIndex=i;
+    sel.innerHTML='<option value="">Choose 0–9</option>'+Array.from({length:10},(_,n)=>`<option value="${n}">${n}</option>`).join("");
+    if(state.jokerValues[i]!==undefined && state.jokerValues[i]!==null)sel.value=state.jokerValues[i];
+    sel.disabled=state.phase!=="nominate";
+    sel.onchange=()=>{
+      state.jokerValues[i]=sel.value===""?null:Number(sel.value);
+      const all=[...document.querySelectorAll("#jokerFields select")].every(s=>s.value!=="");
+      if(all && state.phase==="nominate"){
+        state.phase="submit";
+        $("turnHint").textContent="Joker locked. Now enter your equation and calculated total.";
+        message("Joker value locked for this turn. Now build your one equation.",true);
+        render();
+      }
+    };
+    wrap.append(lab,sel); fields.appendChild(wrap);
+  }
+}
+function renderGrid(){
+  const a=$("num1").value.trim(), b=$("num2").value.trim();
+  $("v1").textContent=a||"—";
+  $("v2").textContent="+ "+(b||"—");
+}
+function log(s){$("log").insertAdjacentHTML("afterbegin",`<div>${s}</div>`)}
+function message(t,ok=false){$("feedback").innerHTML=`<div class="message ${ok?"ok":"error"}">${t}</div>`}
+function selectMode(btn){
+  document.querySelectorAll(".mode").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+}
+function startGame(){
+  const target=Math.max(10,Math.min(999,Number($("target").value)||98));$("target").value=target;
+  const f=framework(target),deck=makeDeck(),hands=[[],[]];
+  for(let i=0;i<f.hand;i++){hands[0].push(deck.pop());hands[1].push(deck.pop())}
+  state={target,deck,discard:[],hands,turn:0,phase:"draw",mode:document.querySelector(".mode.active").dataset.mode,jokerValues:[],handoffTo:null};
+  $("setup").classList.add("hidden");$("game").classList.remove("hidden");$("overlay").classList.add("hidden");$("feedback").innerHTML="";$("log").innerHTML="";
+  $("num1").value="";$("num2").value="";$("calc").value="";
+  log(`Mission started. Target: ${target}. Framework: ${f.digits}-digit + ${f.digits}-digit.`);
+  render();
+}
+
+function bestCurrentTotal(player){
+  const hand=state.hands[player]||[];
+  const f=framework(state.target);
+  if(hand.length!==f.hand)return null;
+
+  let best=null;
+  const jokerPositions=[];
+  hand.forEach((c,i)=>{if(c==="J")jokerPositions.push(i);});
+
+  // A Joker can represent any numeral. For the closest-score display,
+  // test every legal Joker value and every arrangement of the hand.
+  const jokerAssignments = jokerPositions.length
+    ? Array.from({length:10},(_,n)=>[n])
+    : [[]];
+
+  function evaluate(arr){
+    const a=Number(arr.slice(0,f.digits).join(""));
+    const b=Number(arr.slice(f.digits).join(""));
+    // Leading zeroes are permitted (e.g. 01).
+    const total=a+b, diff=Math.abs(state.target-total);
+    if(!best || diff<best.diff)best={a,b,total,diff};
+  }
+
+  function permute(arr,l){
+    if(l===arr.length){ evaluate(arr); return; }
+    for(let i=l;i<arr.length;i++){
+      [arr[l],arr[i]]=[arr[i],arr[l]];
+      permute(arr,l+1);
+      [arr[l],arr[i]]=[arr[i],arr[l]];
+    }
+  }
+
+  if(jokerPositions.length===0){
+    permute(hand.slice(),0);
+  }else{
+    for(const value of jokerAssignments[0]){
+      const replaced=hand.map(c=>c==="J"?String(value):String(c));
+      permute(replaced,0);
+    }
+  }
+  return best;
+}
+function showSwitchScreen(nextPlayer){
+  if(state.mode!=="human") return;
+  const ov=$("switchOverlay"),img=ov?.querySelector("img"),btn=$("switchOk");
+  if(!ov||!btn)return;
+  if(img)img.src="agent98-switch-player.png";
+  ov.hidden=false; ov.style.display="flex"; ov.style.pointerEvents="auto"; ov.setAttribute("aria-hidden","false");
+  btn.textContent=`OK — SWITCH TO PLAYER ${nextPlayer+1}`;
+  btn.onclick=()=>{
+    ov.hidden=true; ov.style.display="none"; ov.style.pointerEvents="none"; ov.setAttribute("aria-hidden","true");
+    state.turn=nextPlayer;
+    state.phase="draw";
+    $("turnHint").textContent=`PLAYER ${nextPlayer+1} — DRAW A CARD`;
+    render();
+    window.scrollTo({top:0,behavior:"smooth"});
+  };
+}
+
+function drawCard(fromDiscard=false){
+  const me=activePlayer();
+  if(state.phase!=="draw" || (state.mode==="cpu" && state.turn!==0))return;
+  const c=fromDiscard?state.discard.pop():state.deck.pop();
+  if(c===undefined)return;
+  state.hands[me].push(c);
+  state.jokerValues=[];
+  state.phase="discard";
+  $("turnHint").textContent="CHOOSE A CARD TO THROW BACK";
+  message("You have drawn a card. Tap ANY ONE card in your hand to discard it before continuing.",true);
+  render();
+}
+function cpuTurn(){
+  state.turn=1;state.phase="draw";render();
+  setTimeout(()=>{
+    const takeDiscard=state.discard.length && Math.random()<0.55;
+    const c=takeDiscard?state.discard.pop():state.deck.pop();
+    if(c!==undefined)state.hands[1].push(c);
+    const best=bestEquation(state.hands[1],state.target,framework(state.target).digits);
+    let discardIdx=0;
+    if(best){
+      // Discard a card which leaves the smallest possible distance.
+      let bd=Infinity;
+      for(let i=0;i<state.hands[1].length;i++){
+        const rem=state.hands[1].slice(0,i).concat(state.hands[1].slice(i+1));
+        const e=bestEquation(rem,state.target,framework(state.target).digits);
+        if(e&&e.diff<bd){bd=e.diff;discardIdx=i}
+      }
+    }
+    const discarded=state.hands[1].splice(discardIdx,1)[0];state.discard.push(discarded);
+    const final=bestEquation(state.hands[1],state.target,framework(state.target).digits);
+    log(`Mr Thomas completed a turn${final?` — best current total ${final.a+final.b}`:""}.`);
+    if(final&&final.diff===0){endGame("MR THOMAS",final.a+final.b);return}
+    if(state.deck.length===0){compareAtEnd();return}
+    state.turn=0;
+    state.phase="draw";
+    $("turnHint").textContent="PLAYER 1 — DRAW A CARD OR TAKE THE DISCARD";
+    render();
+  },650);
+}
+function submit(){
+  const me=activePlayer();
+  if(state.phase!=="submit" || (state.mode==="cpu" && state.turn!==0))return;
+  const f=framework(state.target), n1=$("num1").value.trim(),n2=$("num2").value.trim(),calc=$("calc").value.trim();
+  const hand=state.hands[me], remainingJokers=hand.filter(x=>x==="J").length;
+  if(remainingJokers>0 && (state.jokerValues.length!==remainingJokers || state.jokerValues.some(v=>v===null||v===undefined))){
+    message("Nominate a value for every Joker before submitting."); return;
+  }
+  const check=exactForSubmitted(hand,n1,n2,state.target,f.digits);
+  if(!check.ok){message(check.msg);return}
+  if(calc!==String(check.total)){message("Your calculated total does not match your equation. Work it out again.");return}
+  log(`${playerName(me)} submitted ${n1} + ${n2} = ${check.total}.`);
+  if(check.total===state.target){
+    endGame(state.mode==="cpu"?"YOU":playerName(me),check.total); return;
+  }
+  state.pendingTotal=check.total;
+  state.jokerValues=[];
+  if(state.deck.length===0){compareAtEnd();return;}
+  $("num1").value="";$("num2").value="";$("calc").value="";$("feedback").innerHTML="";
+  if(state.mode==="cpu"){
+    state.turn=1; state.phase="draw"; $("turnHint").textContent="MR THOMAS IS MAKING HIS MOVE…"; render(); cpuTurn();
+  }else{
+    const next=me===0?1:0;
+    state.phase="draw";
+    state.turn=me; // keep current player highlighted until the handover is acknowledged
+    showSwitchScreen(next);
+  }
+}
+function discardClick(index){
+  const me=activePlayer();
+  if(!state || state.phase!=="discard" || (state.mode==="cpu" && state.turn!==0))return;
+  const f=framework(state.target), hand=state.hands[me];
+  if(index<0 || index>=hand.length)return;
+  if(hand.length!==f.hand+1){message("Draw a card first, then discard one card.");return}
+  const c=hand.splice(index,1)[0];
+  state.discard.push(c);
+  log(`${playerName(me)} discarded ${cardLabel(c)}.`);
+  $("num1").value="";$("num2").value="";$("calc").value="";$("feedback").innerHTML="";
+  state.jokerValues=[];
+  const remainingJokers=hand.filter(x=>x==="J").length;
+  if(remainingJokers>0){
+    state.phase="nominate";
+    $("turnHint").textContent="NOMINATE YOUR JOKER VALUE";
+    message("Joker remains. Choose its value now, before entering your equation.",true);
+  }else{
+    state.phase="submit";
+    $("turnHint").textContent="BUILD YOUR EQUATION AND CALCULATE THE TOTAL";
+    message("Discard complete. Now build your one equation.",true);
+  }
+  render();
+}
+function passForPlayer2(){
+  // This changeover screen is ONLY used for player-vs-player.
+  if(state.mode==="human"){
+    showSwitchScreen(1);
+    return;
+  }
+  state.turn=1;
+  state.phase="draw";
+  render();
+  cpuTurn();
+}
+function compareAtEnd(){
+  const f=framework(state.target),a=bestEquation(state.hands[0],state.target,f.digits),b=bestEquation(state.hands[1],state.target,f.digits);
+  const av=a?a.a+a.b:null,bv=b?b.a+b.b:null;
+  if(av===null&&bv===null)return endGame("NO WINNER",null);
+  const ad=av===null?Infinity:Math.abs(av-state.target),bd=bv===null?Infinity:Math.abs(bv-state.target);
+  if(ad===bd)endGame("DRAW",av,bv);
+  else if(ad<bd)endGame(state.mode==="cpu"?"YOU":"PLAYER 1",av,bv);
+  else endGame(state.mode==="cpu"?"MR THOMAS":"PLAYER 2",bv,av);
+}
+function endGame(winner,total,other){
+  $("handover").classList.add("hidden");
+  $("overlay").classList.remove("hidden");
+  $("winner").textContent=winner==="YOU"
+    ? (state.target===98 ? "YOU CAPTURED AGENT 98 — YOU WIN!" : "TARGET CAPTURED — YOU WIN!")
+    : winner==="DRAW" ? "DRAW" : winner+" WINS";
+  $("finalText").textContent=total==null
+    ?"The mission ended."
+    :`You reached ${total}. Target: ${state.target}.`;
+  state.phase="ended";render();
+}
+$("start").onclick=startGame;$("drawBtn").onclick=()=>drawCard(false);$("takeBtn").onclick=()=>drawCard(true);
+$("submitBtn").onclick=submit;$("clearBtn").onclick=()=>{$("num1").value="";$("num2").value="";$("calc").value="";$("feedback").innerHTML="";renderGrid()};
+$("newGame").onclick=()=>{ $("overlay").classList.add("hidden");$("handover").classList.add("hidden");$("game").classList.add("hidden");$("setup").classList.remove("hidden") };
+$("unlockBtn").onclick=unlockHandover;
+$("num1").oninput=renderGrid;$("num2").oninput=renderGrid;
+$("showOpp").onchange=renderOpp;
+document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",()=>selectMode(b)));
+$("myHand").addEventListener("click",e=>{
+  const card=e.target.closest(".card");
+  if(!card || !state || state.phase!=="discard")return;
+  if(state.mode==="cpu" && state.turn!==0)return;
+  discardClick(Number(card.dataset.cardIndex));
+});
+</script>
+
+<div id="switchOverlay" class="switch-overlay" hidden aria-hidden="true" style="display:none">
+  <div class="switch-card">
+    <img src="agent98-switch-player.png" alt="Switch Player" title="Switch Player">
+    <div class="switch-actions">
+      <button id="switchOk" class="gold">OK — SWITCH PLAYER</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

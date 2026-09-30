@@ -1,0 +1,9 @@
+{
+  "name": "agent98",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent 98 mathematics card game",
+  "scripts": {"build":"echo Agent 98 uses static web files","cap:add:android":"npx cap add android","cap:sync":"npx cap sync"},
+  "dependencies": {"@capacitor/core":"8.5.2","@capacitor/android":"8.5.2"},
+  "devDependencies": {"@capacitor/cli":"8.5.2","@capacitor/assets":"3.0.5"}
+}
