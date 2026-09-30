@@ -1,0 +1,50 @@
+name: Build Agent 98 Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare web files
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+          cp agent98-banner.png www/agent98-banner.png
+          cp agent98-card-back.png www/agent98-card-back.png
+          cp agent98-joker.png www/agent98-joker.png
+          cp agent98-switch-player.png www/agent98-switch-player.png
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Generate Android icon and splash assets
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#061426' --iconBackgroundColorDark '#061426' --splashBackgroundColor '#061426' --splashBackgroundColorDark '#061426'
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Agent98-Android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
