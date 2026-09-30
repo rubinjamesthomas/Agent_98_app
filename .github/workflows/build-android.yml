@@ -39,6 +39,11 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
+      - name: Prepare app icon
+        run: |
+          mkdir -p resources
+          cp icon.png resources/icon.png
+
       - name: Generate Android icon and splash assets
         run: npx @capacitor/assets generate --android --iconBackgroundColor '#061426' --iconBackgroundColorDark '#061426' --splashBackgroundColor '#061426' --splashBackgroundColorDark '#061426'
 
